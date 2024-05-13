@@ -8,8 +8,8 @@ osinfo = subprocess.check_output("cat /etc/os-release", shell=True, text=True).s
 
 i = 1
 while i < len(sys.argv):
-    if not sys.argv[i] == "-d" and not sys.argv[i] == "--distro":
-        osinfo[2] = sys.argv[i]
+    if sys.argv[i] == "-d" or sys.argv[i] == "--distro":
+        osinfo[2] = sys.argv[i+1]
     i = i + 1
 
 osf = open('os.txt', 'r').read().split("\n")
