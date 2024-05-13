@@ -4,13 +4,14 @@ import os
 import subprocess
 
 def get_os_info():
-    uname = subprocess.check_output("uname -a", shell=True, text=True).split(" ")
+    kernel = subprocess.check_output("uname -r", shell=True, text=True).strip()
     whoami = subprocess.check_output("whoami", shell=True, text=True).strip()
     arch = subprocess.check_output("uname -m", shell=True, text=True).strip()
+    host  =subprocess.check_output("cat /etc/hostname", shell=True, text=True).strip()
     shell = subprocess.check_output("echo $SHELL", shell=True, text=True).strip()
     cpuinfo = subprocess.check_output("cat /proc/cpuinfo", shell=True, text=True).split("\n")
     osrelease = subprocess.check_output("cat /etc/os-release", shell=True, text=True).split("\n")
-    return uname, whoami, cpuinfo, osrelease, arch, shell
+    return kernel, whoami, cpuinfo, osrelease, arch, shell, host
 
 def parse_os_logo(ID, osf):
     oslogo = [""] * len(osf)
@@ -46,7 +47,7 @@ def parse_shell(shell):
         return "Other"
 
 def main():
-    uname, whoami, cpuinfo, osrelease, arch, shell = get_os_info()
+    kernel, whoami, cpuinfo, osrelease, arch, shell, host = get_os_info()
 
     ID, NAME = parse_os_release(osrelease)
     shell = parse_shell(shell)
@@ -62,10 +63,10 @@ def main():
 
     print()
     print(oslogo[0], "OS:\033[0m", NAME)
-    print(oslogo[1], "Kernel:\033[0m", uname[2])
+    print(oslogo[1], "Kernel:\033[0m", kernel)
     print(oslogo[2], "CPU:\033[0m", arch + " " + cpuinfo[4].replace("model name	: ", '').replace(" CPU", ''))
     print(oslogo[3], "Shell:\033[0m", shell)
-    print(oslogo[4], "Host:\033[0m", uname[1])
+    print(oslogo[4], "Host:\033[0m", host)
     print(oslogo[5], "User:\033[0m", whoami)
     print("\033[0m")
 
