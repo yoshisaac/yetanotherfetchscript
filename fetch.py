@@ -23,7 +23,7 @@ for line in osf:
         startRead = True
         continue;
 
-    if line == ":" and startRead == True:
+    if line == ":EOF" and startRead == True:
         break;
 
     if startRead == True:
