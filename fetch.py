@@ -32,7 +32,7 @@ def parse_os_logo(ID, osf):
         if startRead:
             oslogo[i] = line.replace("\\033", '\033')
             i += 1
-    while i < len(oslogo) - linedex:
+    while i < len(oslogo):
         if oslogo[i] == "":
             oslogo[i] = osf[linedex-2].replace("\\033", '\033')
         i += 1
