@@ -42,21 +42,41 @@ const char* get_shell(void) {
   return shell;
 }
 
-char* calc_mhz(const char* mhz_str) {
-  double mhz_d;
-  sscanf(mhz_str, "%lf", &mhz_d);
+const char* calc_mhz(const char* mhz_str) {
+  bool is_ghz = strlen(mhz_str) >= 4;
 
-  bool is_ghz = false;
-  if (mhz_d >= 1000) {
-    mhz_d /= 100;
-    is_ghz = true;
+  char* ret_mhz = malloc(strlen(mhz_str)+4);
+
+  unsigned int i;
+  if (!is_ghz) {
+    for (i = 0; i < strlen(mhz_str); ++i) {
+      ret_mhz[i] = mhz_str[i];
+    }
+    ret_mhz[ strlen(mhz_str) ] = ' ';
+    ret_mhz[strlen(mhz_str)+1] = 'M';
+    ret_mhz[strlen(mhz_str)+2] = 'H';
+    ret_mhz[strlen(mhz_str)+3] = 'z';
+    ret_mhz[strlen(mhz_str)+4] = '\0';
+  } else if (is_ghz) {
+    bool start_bump = false;
+    char tmp;
+    for (i = 0; i < strlen(mhz_str)-1; ++i) {
+      if (i == 2) { tmp = mhz_str[i]; ret_mhz[i] = '.'; start_bump = true; continue; }
+      if (start_bump) {
+	ret_mhz[i] = tmp;
+	tmp = mhz_str[i+1];
+	continue;
+      }
+      ret_mhz[i] = mhz_str[i];
+    }
+    ret_mhz[ strlen(mhz_str) ] = ' ';
+    ret_mhz[strlen(mhz_str)+1] = 'G';
+    ret_mhz[strlen(mhz_str)+2] = 'H';
+    ret_mhz[strlen(mhz_str)+3] = 'z';
+    ret_mhz[strlen(mhz_str)+4] = '\0';
   }
 
-  char* mhz_str2;
-  
-  snprintf(mhz_str2, 256, "%lf", mhz_d);
-
-  return mhz_str2;
+  return ret_mhz;
 }
 
 const char* get_cpu(void) {
@@ -87,7 +107,10 @@ const char* get_cpu(void) {
 
     if (match(line, "model name")) on_modelname = true;
     if (on_modelname && past_colon) {
-      if (ch == '@') { cpu[cpu_t] = '@'; cpu[++cpu_t] = ' '; past_colon = false; continue; }
+      if (ch == '@') { cpu[cpu_t]   = '@';
+	               cpu[++cpu_t] = ' ';
+		       past_colon   = false;
+		       continue; }
       cpu[cpu_t] = ch;
       ++cpu_t;
     }
@@ -95,28 +118,26 @@ const char* get_cpu(void) {
     if (match(line, "cpu MHz")) on_cpumhz = true;
     if (on_cpumhz && past_colon) {
       if (ch == '.') { past_colon = false; continue; }
-      cpu[cpu_t] = ch;
-      ++cpu_t;
+      cpu_mhz[cpu_mhz_t] = ch;
+      ++cpu_mhz_t;
     }
 
     ++line_t;
-    
   }
-  cpu[ cpu_t ] = ' ';
-  cpu[cpu_t+1] = 'M';
-  cpu[cpu_t+2] = 'H';
-  cpu[cpu_t+3] = 'z';
-  cpu[cpu_t+4] = '\0';
+
+  const char* mhz = calc_mhz(cpu_mhz);
+  unsigned int i = 0;
+  for (i; i < strlen(mhz); ++i) {
+    cpu[cpu_t+i] = mhz[i];
+  }
+  cpu[cpu_t+i] = '\0';
 
   //remove unwanted strings
   for (unsigned int i = 0; i < strlen(cpu); ++i) {
-    if (cpu[i] == 'C' && cpu[i+1] == 'P' && cpu[i+2] == 'U')
+    if (match(cpu+i, "CPU"))
       for (unsigned int h = 0; h < 4; ++h) cpu[i+h] = 6;
 
-    if (cpu[ i ] == 'P' && cpu[i+1] == 'r' &&
-	cpu[i+2] == 'o' && cpu[i+3] == 'c' &&
-	cpu[i+4] == 'e' && cpu[i+5] == 's' &&
-	cpu[i+6] == 's' && cpu[i+7] == 'o' && cpu[i+8] == 'r')
+    if (match(cpu+i, "Processor"))
       for (unsigned int h = 0; h < 9; ++h) cpu[i+h] = 6;
   }
 
