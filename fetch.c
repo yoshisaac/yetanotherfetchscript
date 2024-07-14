@@ -38,6 +38,9 @@ const char* get_shell(void) {
 
   if (strcmp(shell, "/bin/bash") == 0)
     return "bash";
+
+  if (strcmp(shell, "/bin/zsh") == 0)
+    return "zsh";
   
   return shell;
 }
@@ -107,31 +110,33 @@ const char* get_cpu(void) {
 
     if (match(line, "model name")) on_modelname = true;
     if (on_modelname && past_colon) {
-      if (ch == '@') { cpu[cpu_t]   = '@';
-	               cpu[++cpu_t] = ' ';
-		       past_colon   = false;
-		       continue; }
+      /* if (ch == '@') { cpu[cpu_t]   = '@'; */
+      /* 	               cpu[++cpu_t] = ' '; */
+      /* 		       past_colon   = false; */
+      /* 		       continue; } */
       cpu[cpu_t] = ch;
       ++cpu_t;
     }
 
-    if (match(line, "cpu MHz")) on_cpumhz = true;
-    if (on_cpumhz && past_colon) {
-      if (ch == '.') { past_colon = false; continue; }
-      cpu_mhz[cpu_mhz_t] = ch;
-      ++cpu_mhz_t;
-    }
+    /* if (match(line, "cpu MHz")) on_cpumhz = true; */
+    /* if (on_cpumhz && past_colon) { */
+    /*   if (ch == '.') { past_colon = false; continue; } */
+    /*   cpu_mhz[cpu_mhz_t] = ch; */
+    /*   ++cpu_mhz_t; */
+    /* } */
 
     ++line_t;
   }
 
-  const char* mhz = calc_mhz(cpu_mhz);
-  unsigned int i = 0;
-  for (i; i < strlen(mhz); ++i) {
-    cpu[cpu_t+i] = mhz[i];
-  }
-  cpu[cpu_t+i] = '\0';
+  /* const char* mhz = calc_mhz(cpu_mhz); */
+  /* unsigned int i = 0; */
+  /* for (i; i < strlen(mhz); ++i) { */
+  /*   cpu[cpu_t+i] = mhz[i]; */
+  /* } */
+  /* cpu[cpu_t+i] = '\0'; */
 
+  cpu[cpu_t] = '\0';
+  
   //remove unwanted strings
   for (unsigned int i = 0; i < strlen(cpu); ++i) {
     if (match(cpu+i, "CPU"))
